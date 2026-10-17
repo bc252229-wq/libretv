@@ -1,13 +1,12 @@
 # ---------- LibreTV build ----------
 FROM node:22-alpine AS libretv-builder
 WORKDIR /app
-RUN corepack enable
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm install --no-audit --no-fund
 COPY . .
 ENV DOCKER_BUILD=1
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
+RUN npm run build
 
 # ---------- danmu_api ----------
 FROM node:22-alpine AS danmu-builder
