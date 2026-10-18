@@ -282,17 +282,20 @@ export function PlayerShell({
     return {
       debug: false,
       enableWorker: true,
-      backBufferLength: 90,
-      maxBufferLength: cacheEnabled ? 120 : 30,
-      maxMaxBufferLength: cacheEnabled ? 600 : 60,
-      maxBufferSize: (cacheEnabled ? 90 : 30) * 1000 * 1000,
+      // 内存/带宽优化：回看缓冲 90s→30s；按播放器尺寸限制最高清晰度，避免拉取超出显示需要的码率
+      backBufferLength: 30,
+      capLevelToPlayerSize: true,
+      maxBufferLength: cacheEnabled ? 60 : 20,
+      maxMaxBufferLength: cacheEnabled ? 300 : 40,
+      maxBufferSize: (cacheEnabled ? 60 : 20) * 1000 * 1000,
       maxBufferHole: 0.5,
       fragLoadingMaxRetry: 6,
       fragLoadingRetryDelay: 1000,
       manifestLoadingMaxRetry: 3,
       manifestLoadingRetryDelay: 1000,
       startLevel: -1,
-      abrEwmaDefaultEstimate: 500_000,
+      // 初始带宽估计调低，起步优先选择较低码率，之后由 ABR 自适应
+      abrEwmaDefaultEstimate: 300_000,
       appendErrorMaxRetry: 5,
       // 组合 loader：广告过滤（blockAd 随设置）+ 片段缓存命中（cacheEnabled）
       loader: createHlsLoader(Hls, { blockAd: p.adFilter }) as unknown as HlsConfig['loader'],

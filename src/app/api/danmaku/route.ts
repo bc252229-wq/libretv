@@ -30,6 +30,22 @@ function toArtplayerMode(mode: number): 0 | 1 | 2 {
   return 0; // 滚动
 }
 
+/** 弹幕默认上限（可用 DANMAKU_MAX_COMMENTS 覆盖，0 表示不限制） */
+const parsedMax = parseInt(process.env.DANMAKU_MAX_COMMENTS ?? '300', 10);
+const MAX_COMMENTS = Number.isFinite(parsedMax) ? Math.max(0, parsedMax) : 300;
+
+/** 等间隔采样：保留整集时间分布，避免简单截断导致前密后疏 */
+function sampleComments(list: ArtplayerComment[], maxCount: number): ArtplayerComment[] {
+  if (maxCount <= 0 || list.length <= maxCount) return list;
+  const sorted = [...list].sort((a, b) => a.time - b.time);
+  const step = sorted.length / maxCount;
+  const out: ArtplayerComment[] = [];
+  for (let i = 0; i < maxCount; i += 1) {
+    out.push(sorted[Math.floor(i * step)]);
+  }
+  return out;
+}
+
 export async function GET(req: Request) {
   const guarded = guardRequest(req);
   if (guarded) return guarded;
@@ -100,13 +116,15 @@ export async function GET(req: Request) {
       })
       .filter((c) => c.text && c.time >= 0);
 
+    const sampled = sampleComments(comments, MAX_COMMENTS);
+
     return NextResponse.json({
       matched: true,
       fileName,
       source: first.animeTitle,
       episodeTitle: first.episodeTitle,
-      count: comments.length,
-      comments,
+      count: sampled.length,
+      comments: sampled,
     });
   } catch (err) {
     return NextResponse.json({
