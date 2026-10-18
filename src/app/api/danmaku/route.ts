@@ -31,8 +31,8 @@ function toArtplayerMode(mode: number): 0 | 1 | 2 {
 }
 
 /** 弹幕默认上限（可用 DANMAKU_MAX_COMMENTS 覆盖，0 表示不限制） */
-const parsedMax = parseInt(process.env.DANMAKU_MAX_COMMENTS ?? '500', 10);
-const MAX_COMMENTS = Number.isFinite(parsedMax) ? Math.max(0, parsedMax) : 500;
+const parsedMax = parseInt(process.env.DANMAKU_MAX_COMMENTS ?? '2000', 10);
+const MAX_COMMENTS = Number.isFinite(parsedMax) ? Math.max(0, parsedMax) : 2000;
 
 /** 等间隔采样：保留整集时间分布，避免简单截断导致前密后疏 */
 function sampleComments(list: ArtplayerComment[], maxCount: number): ArtplayerComment[] {
